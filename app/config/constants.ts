@@ -4,14 +4,17 @@ export const CONNECTIONS = {
   prod: {
     metalWeb: "https://metal.build",
     metalService: "https://api.metal.build",
+    channel: "https://warpcast.com/~/channel/fountain",
   },
   staging: {
     metalWeb: "https://staging.metal.build",
     metalService: "https://staging.api.metal.build",
+    channel: "https://warpcast.com/~/channel/fountain",
   },
   dev: {
     metalWeb: "http://localhost:3000",
     metalService: "http://localhost:1234",
+    channel: "https://warpcast.com/~/channel/fountain",
   },
 };
 export const NEYNAR_API_URL = "https://api.neynar.com/v2/farcaster";
