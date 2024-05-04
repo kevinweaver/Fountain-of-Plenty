@@ -1,6 +1,6 @@
-```
-npm install
-npm run dev
-```
+# Fountain of Plenty
 
-Head to http://localhost:3000/api# Fountain-of-Plenty
+```
+yarn install
+yarn run dev
+```
