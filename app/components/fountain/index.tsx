@@ -20,7 +20,17 @@ import {
   getOrInitState,
   setDraftTokenValue,
 } from "./helpers";
-import { Box, Column, Columns, HStack, Image, Text, VStack, vars } from "./ui";
+import {
+  Box,
+  Column,
+  Columns,
+  HStack,
+  Heading,
+  Image,
+  Text,
+  VStack,
+  vars,
+} from "./ui";
 import {
   CONNECTIONS,
   FROG_SIGNER_SECRET,
@@ -29,6 +39,7 @@ import {
 } from "@/app/config/constants";
 import { getNeynar } from "@/app/services/neynar";
 import { CastResponse } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { isUint256 } from "@/app/utils";
 
 const Fountain = new Frog<{ State: FountainState }>({
   assetsPath: "/",
@@ -67,13 +78,15 @@ const EnterName = (
               [step 1]{" "}
             </Text>
             <Text size="24"> give your offering a name</Text>
-            {needsValidation && (
-              <Text size="18" color="red">
-                max 10 characters
-              </Text>
-            )}
           </>
         </Box>
+        <>
+          {needsValidation && (
+            <Text size="18" color="red">
+              max 10 characters
+            </Text>
+          )}
+        </>
       </Layout>
     ),
     intents: [
@@ -97,18 +110,119 @@ const EnterSymbol = (
               [step 2]{" "}
             </Text>
             <Text size="24"> give your offering a ticker</Text>
-            {needsValidation && (
-              <Text size="18" color="red">
-                max 6 characters
-              </Text>
-            )}
           </>
         </Box>
+        <>
+          {needsValidation && (
+            <Text size="18" color="red">
+              max 6 characters
+            </Text>
+          )}
+        </>
       </Layout>
     ),
     intents: [
       <TextInput placeholder="token symbol" />,
       <Button value="back:name">back</Button>,
+      <Button value="price">next 👉</Button>,
+    ],
+  });
+};
+
+const EnterPrice = (
+  c: FountainContext,
+  { needsValidation }: { needsValidation?: boolean } = {}
+) => {
+  return c.res({
+    headers: NO_CACHE_HEADER,
+    image: (
+      <Layout>
+        <Box grow alignHorizontal="center" alignVertical="center" gap="4">
+          <>
+            <Heading size="24" color="blue">
+              [step 3]
+            </Heading>
+            <Text size="24"> what would you pay for such an offering?</Text>
+          </>
+        </Box>
+        <>
+          {needsValidation && (
+            <Text size="18" color="red">
+              between 0 and 2999, be reasonable now
+            </Text>
+          )}
+        </>
+      </Layout>
+    ),
+    intents: [
+      <TextInput placeholder="token price" />,
+      <Button value="back:symbol">back</Button>,
+      <Button value="supply">next 👉</Button>,
+    ],
+  });
+};
+
+const EnterSupply = (
+  c: FountainContext,
+  { needsValidation }: { needsValidation?: boolean } = {}
+) => {
+  return c.res({
+    headers: NO_CACHE_HEADER,
+    image: (
+      <Layout>
+        <Box grow alignHorizontal="center" alignVertical="center" gap="4">
+          <>
+            <Text size="24" color="blue">
+              [step 4]
+            </Text>
+            <Text size="24"> what is the total supply?</Text>
+          </>
+        </Box>
+        <>
+          {needsValidation && (
+            <Text size="18" color="red">
+              please be reasonable
+            </Text>
+          )}
+        </>
+      </Layout>
+    ),
+    intents: [
+      <TextInput placeholder="token supply" />,
+      <Button value="back:price">back</Button>,
+      <Button value="burn">next 👉</Button>,
+    ],
+  });
+};
+
+const EnterBurn = (
+  c: FountainContext,
+  { needsValidation }: { needsValidation?: boolean } = {}
+) => {
+  return c.res({
+    headers: NO_CACHE_HEADER,
+    image: (
+      <Layout>
+        <Box grow alignHorizontal="center" alignVertical="center" gap="4">
+          <>
+            <Text size="24" color="blue">
+              [step 5]
+            </Text>
+            <Text size="24"> throw some in the fountain?</Text>
+          </>
+        </Box>
+        <>
+          {needsValidation && (
+            <Text size="18" color="red">
+              don't be greedy
+            </Text>
+          )}
+        </>
+      </Layout>
+    ),
+    intents: [
+      <TextInput placeholder="token burn" />,
+      <Button value="back:supply">back</Button>,
       <Button value="meme">next 👉</Button>,
     ],
   });
@@ -131,7 +245,7 @@ Fountain.frame("/more-info", async (c) => {
           <VStack gap="4">
             <li>&bull; you offer a meme, Fountain of Plenty deploys a token</li>
             <li>
-              &bull; toss some of your new tokens into the Fountain (burn them)
+              &bull; toss (burn) some of your new tokens into the Fountain
             </li>
             <li>&bull; 0% creator fee </li>
             <li>
@@ -170,13 +284,23 @@ Fountain.frame("/create", async (c) => {
     const needsRetry =
       !value ||
       (previousStep === "name" && value.length > 10) ||
-      (previousStep === "symbol" && value.length > 6);
+      (previousStep === "symbol" && value.length > 6) ||
+      (previousStep === "price" &&
+        (!isUint256(value) || Number(value) <= 2999)) ||
+      (previousStep === "supply" && !isUint256(value)) ||
+      (previousStep === "burn" && (!isUint256(value) || Number(value) <= 0));
 
     if (needsRetry) {
       if (previousStep === "name")
         return EnterName(c, { needsValidation: true });
       if (previousStep === "symbol")
         return EnterSymbol(c, { needsValidation: true });
+      if (previousStep === "price")
+        return EnterPrice(c, { needsValidation: true });
+      if (previousStep === "supply")
+        return EnterSupply(c, { needsValidation: true });
+      if (previousStep === "burn")
+        return EnterBurn(c, { needsValidation: true });
     }
 
     console.log("calling derive stage again");
@@ -194,6 +318,9 @@ Fountain.frame("/create", async (c) => {
   // Renderer
   if (currentStep === "name") return EnterName(c);
   if (currentStep === "symbol") return EnterSymbol(c);
+  if (currentStep === "price") return EnterPrice(c);
+  if (currentStep === "supply") return EnterSupply(c);
+  if (currentStep === "burn") return EnterBurn(c);
   if (currentStep === "meme") return PostMeme(c);
   return ErrorFrame(c, "Invalid step");
 });
@@ -261,6 +388,9 @@ Fountain.frame("/token/:fid/:tokenAddress", async (c) => {
               <TokenData
                 name={token.name}
                 symbol={token.symbol}
+                price={`${token.initialPrice}`}
+                supply={`${token.totalSupply}`}
+                burned={`${token.recipient!.amount}`}
                 deployer={response?.cast?.author?.username}
               />
             </VStack>

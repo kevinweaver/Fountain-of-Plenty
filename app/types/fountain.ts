@@ -5,7 +5,15 @@ import { Address, Hex } from "viem";
 ////// FRAME TYPES
 ///
 
-export const steps = ["init", "name", "symbol", "meme"] as const;
+export const steps = [
+  "init",
+  "name",
+  "symbol",
+  "supply",
+  "price",
+  "burn",
+  "meme",
+] as const;
 
 export type Step = (typeof steps)[number];
 
@@ -28,22 +36,52 @@ export type FountainContext = FrameContext<{
 ///
 ////// REDIS TYPES
 ///
-
-export type FountainToken = {
+export type MemeCoin = {
+  /**
+   * token name
+   */
   name: string;
+  /**
+   * token symbol
+   */
   symbol: string;
+  /**
+   * Total supply in human readable format
+   * @example 1000000
+   */
+  totalSupply: number;
+  /**
+   * Initial price in human readable format
+   * @example 0.02
+   */
+  initialPrice: number;
+  /**
+   * optionally specify a token recipient and an amount.
+   * @dev must be less <= totalSupply
+   */
+  recipient?: {
+    /**
+     * address which will receive an initial distribution of the token
+     */
+    address: Address;
+    /*
+     * amount of tokens to distribute to the recipient
+     */
+    amount: number;
+  };
+};
+
+export type FountainToken = MemeCoin & {
   tokenUri: string;
   memeCastHash: Hex;
   tokenAddress: Address;
 };
 
-export type FountainDraftToken = {
+export type FountainDraftToken = MemeCoin & {
   /**
    * ISO Date string
    */
   updatedTimestamp: string;
-  name: string;
-  symbol: string;
   /**
    * undefined if they haven’t posted
    * their meme yet
