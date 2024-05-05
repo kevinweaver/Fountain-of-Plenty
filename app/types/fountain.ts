@@ -32,7 +32,7 @@ export type FountainContext = FrameContext<{
 export type FountainToken = {
   name: string;
   symbol: string;
-  tokenUrl: string;
+  tokenUri: string;
   memeCastHash: Hex;
   tokenAddress: Address;
 };
