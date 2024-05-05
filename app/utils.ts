@@ -105,3 +105,8 @@ export async function getNeynarUserData(fid: number): Promise<User | null> {
 
   return null;
 }
+
+export const isUint256 = (value: string) => {
+  const num = Number(value);
+  return Number.isInteger(num) && num >= 0 && num < 2 ** 256;
+};

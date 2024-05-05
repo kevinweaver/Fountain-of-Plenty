@@ -56,10 +56,16 @@ export const Layout = ({
 export const TokenData = ({
   name,
   symbol,
+  price,
+  supply,
+  burned,
   deployer,
 }: {
   name?: string;
   symbol?: string;
+  price?: string;
+  supply?: string;
+  burned?: string;
   deployer?: string;
 }) => (
   <Box grow width="100%">
