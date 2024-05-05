@@ -61,10 +61,15 @@ export const setDraftTokenValue = async (
   await redis.set(`${USER_KEY}${fid}`, nextUser);
 };
 
-// if the user has already entered a name or a symbol, skip those steps
 export const deriveInitialStepFromState = (c: FountainContext) =>
-  c.deriveState().draftValues?.symbol
+  c.deriveState().draftValues?.recipient
     ? "meme"
+    : c.deriveState().draftValues?.initialPrice
+    ? "burn"
+    : c.deriveState().draftValues?.totalSupply
+    ? "price"
+    : c.deriveState().draftValues?.symbol
+    ? "supply"
     : c.deriveState().draftValues?.name
     ? "symbol"
     : "name";

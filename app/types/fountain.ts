@@ -9,8 +9,8 @@ export const steps = [
   "init",
   "name",
   "symbol",
-  "supply",
   "price",
+  "supply",
   "burn",
   "meme",
 ] as const;
@@ -22,6 +22,12 @@ export type FountainState = {
   draftValues?: {
     name?: string;
     symbol?: string;
+    initialPrice?: string;
+    totalSupply?: string;
+    recipient?: {
+      address?: string;
+      amount?: string;
+    };
   };
 };
 

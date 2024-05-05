@@ -142,7 +142,7 @@ const EnterPrice = (
             <Heading size="24" color="blue">
               [step 3]
             </Heading>
-            <Text size="24"> what would you pay for such an offering?</Text>
+            <Text size="24"> what is your offering worth in USD?</Text>
           </>
         </Box>
         <>
@@ -229,11 +229,9 @@ const EnterBurn = (
 };
 
 const PostMeme = (c: FountainContext) => {
-  const { name, symbol } = c.deriveState().draftValues || {};
-
   return c.res({
     headers: NO_CACHE_HEADER,
-    image: "/fountain-logo.png", //TODO update to gif
+    image: "/fountain-meme.gif",
   });
 };
 
@@ -286,9 +284,13 @@ Fountain.frame("/create", async (c) => {
       (previousStep === "name" && value.length > 10) ||
       (previousStep === "symbol" && value.length > 6) ||
       (previousStep === "price" &&
-        (!isUint256(value) || Number(value) <= 2999)) ||
-      (previousStep === "supply" && !isUint256(value)) ||
-      (previousStep === "burn" && (!isUint256(value) || Number(value) <= 0));
+        (!Number.isFinite(Number(value)) ||
+          Number(value) <= 0 ||
+          Number(value) > 2999)) ||
+      (previousStep === "supply" &&
+        (!Number.isFinite(Number(value)) || Number(value) <= 0)) ||
+      (previousStep === "burn" &&
+        (!Number.isFinite(Number(value)) || Number(value) <= 0));
 
     if (needsRetry) {
       if (previousStep === "name")
