@@ -1,5 +1,5 @@
 # Fountain of Plenty
-A Farcaster Frame that deploys memecoins for free on base with 0 tx signing.
+A Farcaster Frame that deploys memecoins for free on base with no tx signing.
 
 ```
 yarn install
